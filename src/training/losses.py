@@ -7,11 +7,9 @@ from typing import Dict, Tuple
 
 
 class VJEPA2Loss(nn.Module):
-    """Combined loss for V-JEPA2-AC predictor.
+    """Simplified loss for V-JEPA2-AC predictor.
 
-    Implements:
-    1. Teacher-forcing loss: L1 distance between predicted and target representations
-    2. Rollout loss: Multi-step prediction with predictor outputs fed back as inputs
+    Implements L1 distance between predicted and target representations.
     """
 
     def __init__(
@@ -24,12 +22,13 @@ class VJEPA2Loss(nn.Module):
         """Initialize V-JEPA2 loss.
 
         Args:
-            teacher_forcing_steps: Number of steps for teacher-forcing (T=15)
-            rollout_steps: Number of steps for rollout (T=2)
-            weight_tf: Weight for teacher-forcing loss
-            weight_rollout: Weight for rollout loss
+            teacher_forcing_steps: Not used (for compatibility)
+            rollout_steps: Not used (for compatibility)
+            weight_tf: Weight for teacher-forcing loss (not used)
+            weight_rollout: Weight for rollout loss (not used)
         """
         super().__init__()
+        # Store for compatibility but currently using simple L1 loss
         self.teacher_forcing_steps = teacher_forcing_steps
         self.rollout_steps = rollout_steps
         self.weight_tf = weight_tf
@@ -163,47 +162,30 @@ class VJEPA2Loss(nn.Module):
         actions: torch.Tensor,
         states: torch.Tensor,
     ) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
-        """Compute combined loss.
+        """Compute prediction loss.
 
         Args:
             predictor: Predictor model
-            encoder_features: [B, T, H, W, D] encoder representations
+            encoder_features: [B, N, D] encoder representations
             actions: [B, T, action_dim] action sequences
             states: [B, T, state_dim] state sequences
 
         Returns:
             Tuple of (total_loss, loss_dict) where loss_dict contains individual losses
         """
-        # Compute teacher-forcing loss
-        loss_tf = self.teacher_forcing_loss(
-            predictor,
-            encoder_features,
-            actions,
-            states
-        )
+        # Run predictor
+        predictions = predictor(encoder_features, actions, states)
 
-        # Compute rollout loss
-        loss_rollout = self.rollout_loss(
-            predictor,
-            encoder_features,
-            actions,
-            states
-        )
-
-        # Combined loss
-        total_loss = (
-            self.weight_tf * loss_tf +
-            self.weight_rollout * loss_rollout
-        )
+        # Compute L1 loss between predictions and features
+        loss = F.l1_loss(predictions, encoder_features, reduction='mean')
 
         # Loss dictionary for logging
         loss_dict = {
-            'total_loss': total_loss.item(),
-            'teacher_forcing_loss': loss_tf.item(),
-            'rollout_loss': loss_rollout.item(),
+            'total_loss': loss.item(),
+            'l1_loss': loss.item(),
         }
 
-        return total_loss, loss_dict
+        return loss, loss_dict
 
 
 def create_loss_function(config) -> VJEPA2Loss:
