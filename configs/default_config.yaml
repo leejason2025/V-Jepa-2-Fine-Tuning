@@ -3,7 +3,7 @@
 # Model Configuration
 model:
   predictor_path: null  # Path to V-JEPA2-AC predictor checkpoint (set when available)
-  encoder_path: null    # Path to V-JEPA2 encoder checkpoint (set when available)
+  encoder_path: "pretrained_models/vjepa2-vitl"  # Path to V-JEPA2 encoder checkpoint
   freeze_encoder: true  # Keep encoder frozen, only train predictor
 
   # Architecture specs (300M predictor)

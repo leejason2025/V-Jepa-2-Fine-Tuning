@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).parent / 'src'))
 from utils.config import load_config
 from utils.checkpoint import CheckpointManager, create_optimizer, create_scheduler
 from data import create_dataloader
-from models import create_lora_predictor
+from models import load_vjepa2_ac
 from training import create_loss_function
 from training.trainer import Trainer
 
@@ -36,17 +36,10 @@ def parse_args():
     )
 
     parser.add_argument(
-        '--predictor-checkpoint',
+        '--vjepa2-ac-checkpoint',
         type=str,
-        default=None,
-        help='Path to pretrained predictor checkpoint'
-    )
-
-    parser.add_argument(
-        '--encoder-checkpoint',
-        type=str,
-        default=None,
-        help='Path to pretrained V-JEPA2 encoder checkpoint'
+        default='pretrained_models/vjepa2-ac-vitg.pt',
+        help='Path to pretrained V-JEPA2-AC checkpoint (contains both encoder and predictor)'
     )
 
     parser.add_argument(
@@ -77,12 +70,6 @@ def main():
     if args.debug:
         config.data.debug_mode = True
 
-    if args.predictor_checkpoint:
-        config.model.predictor_path = args.predictor_checkpoint
-
-    if args.encoder_checkpoint:
-        config.model.encoder_path = args.encoder_checkpoint
-
     # Print configuration
     print("\n" + "="*50)
     print("Configuration:")
@@ -97,28 +84,34 @@ def main():
     print(f"Device: {args.device}")
     print("="*50 + "\n")
 
-    # Create model
-    print("Creating V-JEPA2-AC Predictor with LoRA...")
-    predictor = create_lora_predictor(config, pretrained_path=config.model.predictor_path)
+    # Load V-JEPA2-AC model (encoder + predictor)
+    print(f"Loading V-JEPA2-AC from {args.vjepa2_ac_checkpoint}...")
 
-    # Create encoder (placeholder - will be loaded when available)
-    encoder = None
-    if config.model.encoder_path:
-        print(f"Loading V-JEPA2 encoder from {config.model.encoder_path}")
-        # TODO: Load encoder when available
-        print("Warning: Encoder loading not implemented yet. Using placeholder.")
+    # Prepare LoRA config
+    lora_config = {
+        'r': config.lora.r,
+        'lora_alpha': config.lora.lora_alpha,
+        'lora_dropout': config.lora.lora_dropout,
+        'use_rslora': config.lora.use_rslora,
+    }
 
-    # Enable gradient checkpointing for memory savings
+    encoder, predictor = load_vjepa2_ac(
+        checkpoint_path=args.vjepa2_ac_checkpoint,
+        lora_config=lora_config,
+        device=args.device,
+        freeze_encoder=config.model.freeze_encoder,
+        use_gradient_checkpointing=config.training.gradient_checkpointing,
+    )
+
+    print(f"✓ V-JEPA2-AC loaded successfully with LoRA")
     if config.training.gradient_checkpointing:
-        print("Enabling gradient checkpointing...")
-        # Apply to transformer blocks
-        for block in predictor.blocks:
-            block = torch.utils.checkpoint.checkpoint_wrapper(block)
+        print("  ✓ Gradient checkpointing enabled")
 
     # Create data loaders
     print("Creating data loaders...")
     train_dataloader = create_dataloader(config, split='train', shuffle=True)
-    val_dataloader = create_dataloader(config, split='val', shuffle=False)
+    # DROID dataset only has train split, use it for validation too (we'll split it later)
+    val_dataloader = create_dataloader(config, split='train', shuffle=False)
 
     print(f"Training batches per epoch: ~{len(train_dataloader)}")
 

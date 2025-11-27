@@ -13,7 +13,7 @@ bitsandbytes>=0.41.0
 # Data loading
 tensorflow>=2.14.0
 tensorflow-datasets>=4.9.0
-gcs-connector-for-pytorch>=1.0.0
+# gcs-connector-for-pytorch>=1.0.0  # Not available on PyPI, using TFDS for GCS access
 
 # Utilities
 PyYAML>=6.0
