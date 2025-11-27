@@ -1,0 +1,105 @@
+# V-JEPA2-AC LoRA Fine-tuning Configuration
+
+# Model Configuration
+model:
+  predictor_path: null  # Path to V-JEPA2-AC predictor checkpoint (set when available)
+  encoder_path: null    # Path to V-JEPA2 encoder checkpoint (set when available)
+  freeze_encoder: true  # Keep encoder frozen, only train predictor
+
+  # Architecture specs (300M predictor)
+  num_layers: 24
+  num_heads: 16
+  hidden_dim: 1024
+  activation: "gelu"
+
+# LoRA Configuration
+lora:
+  enabled: true
+  r: 16  # Rank (16-32 recommended for 300M model)
+  lora_alpha: 32  # Scaling factor
+  lora_dropout: 0.05
+  use_rslora: true  # Rank-stabilized LoRA (alpha/sqrt(r))
+  target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+    - "mlp.fc1"
+    - "mlp.fc2"
+  bias: "none"
+
+# Data Configuration
+data:
+  dataset: "droid"
+  bucket_name: "gresearch"
+  bucket_prefix: "robotics/droid"
+  debug_mode: false  # Set true to use droid_100 (100 episodes)
+
+  # Video parameters
+  video_resolution: 256
+  fps: 4
+  clip_length_sec: 4
+  frames_per_clip: 16
+
+  # Camera view
+  camera_view: "wrist"  # "wrist", "exterior_1", "exterior_2"
+
+  # Processing
+  filter_idle_actions: true
+  shuffle_buffer_size: 100000
+  num_workers: 4
+  prefetch_factor: 2
+
+# Training Configuration
+training:
+  # Batch sizes
+  per_device_batch_size: 2  # Max that fits in 24GB VRAM
+  gradient_accumulation_steps: 16  # Effective batch = 2 * 16 = 32
+
+  # Optimization
+  learning_rate: 1.0e-4
+  weight_decay: 0.01
+  warmup_steps: 500
+  max_steps: 100000
+
+  # Loss configuration
+  teacher_forcing_steps: 15  # T=15 for teacher-forcing
+  rollout_steps: 2  # T=2 for rollout loss
+  loss_weight_tf: 1.0  # Teacher-forcing loss weight
+  loss_weight_rollout: 1.0  # Rollout loss weight
+
+  # Memory optimization
+  gradient_checkpointing: true
+  mixed_precision: "bf16"  # "fp16" or "bf16"
+  use_8bit_adam: true
+
+  # Logging
+  log_every_n_steps: 10
+  eval_every_n_steps: 500
+  save_every_n_steps: 1000
+
+  # Checkpointing
+  save_total_limit: 5  # Keep last 5 checkpoints
+  checkpoint_dir: "./checkpoints"
+
+  # Distributed training
+  ddp_backend: "nccl"
+  gradient_clipping: 1.0
+
+# Evaluation Configuration
+eval:
+  num_eval_episodes: 100
+  eval_batch_size: 1
+
+# Weights & Biases
+wandb:
+  enabled: false  # Set true when ready to log
+  project: "vjepa2-ac-finetune"
+  entity: null  # Set your W&B username/team
+  run_name: null  # Auto-generated if null
+
+# GCP Configuration
+gcp:
+  project_name: null  # Set your GCP project name
+  checkpoint_bucket: null  # GCS bucket for checkpoint backup
+  use_gce_credentials: true
