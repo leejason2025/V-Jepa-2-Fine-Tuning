@@ -59,7 +59,7 @@ training:
   gradient_accumulation_steps: 16  # Effective batch = 2 * 16 = 32
 
   # Optimization
-  learning_rate: 1.0e-4
+  learning_rate: 2.0e-5  # Reduced from 1e-4
   weight_decay: 0.01
   warmup_steps: 250
   max_steps: 1250
