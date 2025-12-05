@@ -35,9 +35,8 @@ ENV/
 
 # Jupyter
 .ipynb_checkpoints/
-*.ipynb
 
-# Training artifacts
+# Training outputs (keep configs, ignore checkpoints)
 checkpoints/
 checkpoints_debug/
 logs/
@@ -45,36 +44,36 @@ logs/
 wandb/
 runs/
 
-# Data (large files)
+# Large data files (stream from GCS, don't commit)
 data/
-*.h5
-*.hdf5
 *.tfrecord
 
-# Models
-*.pt
-*.pth
-*.ckpt
-*.bin
-*.safetensors
+# Pretrained models (too large for git, download separately)
+pretrained_models/*.pt
+pretrained_models/*.pth
+pretrained_models/*.ckpt
+pretrained_models/*.bin
+pretrained_models/*.safetensors
 
-# GCP
+# V-JEPA2 source (clone from official repo)
+vjepa2/
+vjepa2_src/
+
+# GCP credentials
 credentials.json
 service-account-key.json
+*.json
+!configs/*.json
+!package*.json
 
 # OS
 .DS_Store
 Thumbs.db
+Desktop.ini
 
 # Temporary files
 tmp/
 temp/
 *.tmp
-
-# Documentation
-*.md
-!README.md
-
-# V-JEPA2
-/vjepa2_src/
-/vjepa2/
+*.bak
+*~
