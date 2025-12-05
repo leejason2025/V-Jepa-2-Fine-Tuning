@@ -68,3 +68,8 @@ Thumbs.db
 tmp/
 temp/
 *.tmp
+
+/*.md
+
+# V-JEPA2 source code (copied from external repository)
+/vjepa2_src/
