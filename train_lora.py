@@ -15,9 +15,9 @@ import time
 import os
 
 import vjepa2_src.models.ac_predictor as vit_ac_pred
-import vjepa2_vjepa2_ssrc.models.vision_transformer as video_vit
+import vjepa2_ssrc.models.vision_transformer as video_vit
 
-from droid_local_dataset import create_dataloader
+from droid100 import create_dataloader
 
 
 def main():
@@ -36,9 +36,7 @@ def main():
     normalize_reps = True
     loss_exp = 1.0  # L1 loss
 
-    print("="*60)
     print("V-JEPA2-AC + LoRA Training")
-    print("="*60)
 
     # Create local DROID dataloader
     print("\nInitializing local DROID-100 dataloader...")
@@ -257,9 +255,7 @@ def main():
             print(f"\nSaved checkpoint: {path}")
             sys.stdout.flush()
 
-    print("\n" + "="*60)
     print("Training complete!")
-    print("="*60)
 
 
 if __name__ == '__main__':

@@ -162,9 +162,7 @@ if __name__ == '__main__':
     checkpoint_path = 'pretrained_models/vjepa2-ac-vitg.pt'
 
     # Test without LoRA
-    print("="*70)
     print("Test 1: Loading without LoRA")
-    print("="*70)
     encoder, predictor = load_vjepa2_ac(
         checkpoint_path,
         lora_config=None,
@@ -172,9 +170,7 @@ if __name__ == '__main__':
         freeze_encoder=True
     )
 
-    print("\n" + "="*70)
     print("Test 2: Loading with LoRA")
-    print("="*70)
     encoder, predictor = load_vjepa2_ac(
         checkpoint_path,
         lora_config={'r': 16, 'lora_alpha': 32, 'use_rslora': True},
@@ -183,9 +179,7 @@ if __name__ == '__main__':
     )
 
     # Test forward pass
-    print("\n" + "="*70)
     print("Test 3: Forward pass")
-    print("="*70)
 
     B, T, H, W, C = 1, 16, 256, 256, 3
     dummy_video = torch.randn(B, C, T, H, W)  # [B, C, T, H, W] for 3D conv
