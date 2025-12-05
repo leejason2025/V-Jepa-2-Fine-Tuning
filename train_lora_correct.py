@@ -26,9 +26,9 @@ def main():
 
     # Configuration
     batch_size = 2
-    max_steps = 50  # Start with 50 steps to test
+    max_steps = 50  # Test run
     save_every = 50
-    lr = 2e-5
+    lr = 1e-6  # Conservative: very low LR
 
     # V-JEPA2-AC specific params
     tokens_per_frame = 256  # 16x16 grid
@@ -37,7 +37,7 @@ def main():
     loss_exp = 1.0  # L1 loss
 
     print("="*60)
-    print("V-JEPA2-AC + LoRA Training (CORRECT Loss Function)")
+    print("V-JEPA2-AC + LoRA Training (CONSERVATIVE Config)")
     print("="*60)
 
     # Create local DROID dataloader
@@ -81,17 +81,22 @@ def main():
     for param in target_encoder.parameters():
         param.requires_grad = False
 
-    # Add LoRA to predictor
+    # Add LoRA to predictor (CONSERVATIVE config for ~10% influence)
     lora_config = LoraConfig(
-        r=16, lora_alpha=16, lora_dropout=0.05,
-        target_modules=["qkv", "proj", "fc1", "fc2"],
+        r=4,                      # Very low rank (was 16)
+        lora_alpha=1,             # Very low alpha (was 16) -> scaling = 0.25
+        lora_dropout=0.0,         # No dropout for stability
+        target_modules=[
+            # ONLY attention (NOT fc1/fc2 or action/state encoders)
+            "attn.qkv", "attn.proj",
+        ],
         bias="none", task_type=None
     )
     predictor = get_peft_model(predictor, lora_config)
     predictor.print_trainable_parameters()
 
-    # Optimizer
-    optimizer = torch.optim.AdamW(predictor.parameters(), lr=lr, weight_decay=0.04)
+    # Optimizer (conservative config)
+    optimizer = torch.optim.AdamW(predictor.parameters(), lr=lr, weight_decay=0.1)
 
     # Loss function (from official implementation)
     def loss_fn(z, h):
@@ -219,8 +224,8 @@ def main():
         optimizer.zero_grad()
         loss.backward()
 
-        # Gradient clipping
-        torch.nn.utils.clip_grad_norm_(predictor.parameters(), max_norm=0.5)
+        # Gradient clipping (conservative: aggressive clipping)
+        torch.nn.utils.clip_grad_norm_(predictor.parameters(), max_norm=0.1)
 
         optimizer.step()
 
