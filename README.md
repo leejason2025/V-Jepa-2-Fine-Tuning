@@ -67,3 +67,8 @@ Use these for:
 - Energy landscape analysis
 - Robot policy learning
 - Transfer to new manipulation tasks
+
+## LoRA Weights for Energy Analysis
+
+The trained LoRA weights used for energy landscape analysis are available at:
+- **Weights**: https://github.com/leejason2025/V-Jepa2-LoRa-Weights
