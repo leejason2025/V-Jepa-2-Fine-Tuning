@@ -1,4 +1,5 @@
-# V-JEPA2-AC LoRA Fine-tuning Configuration
+# V-JEPA2-AC LoRA Fine-tuning Configuration - DEBUG MODE
+# For quick testing on droid_100 (100 episodes)
 
 # Model Configuration
 model:
@@ -33,7 +34,7 @@ data:
   dataset: "droid"
   bucket_name: "gresearch"
   bucket_prefix: "robotics"
-  debug_mode: false  # Set true to use droid_100 (100 episodes)
+  debug_mode: true  # Use droid_100 (100 episodes)
 
   # Video parameters
   video_resolution: 256
@@ -44,11 +45,11 @@ data:
   # Camera view
   camera_view: "wrist"  # "wrist", "exterior_1", "exterior_2"
 
-  # Processing
-  filter_idle_actions: true
-  idle_threshold: 0.01  # Threshold for filtering idle actions
+  # Processing - MINIMAL for quick testing
+  filter_idle_actions: false  # Disabled for faster testing
+  idle_threshold: 0.01
   clip_stride: 8  # Stride for sliding window (50% overlap with 16-frame clips)
-  shuffle_buffer_size: 100000
+  shuffle_buffer_size: 10  # Minimal buffer (was 100000)
   num_workers: 4
   prefetch_factor: 2
 
@@ -61,8 +62,8 @@ training:
   # Optimization
   learning_rate: 1.0e-4
   weight_decay: 0.01
-  warmup_steps: 250
-  max_steps: 1250
+  warmup_steps: 10  # Reduced for quick testing (was 250)
+  max_steps: 50  # Just 50 steps for quick validation
 
   # Loss configuration
   teacher_forcing_steps: 15  # T=15 for teacher-forcing
@@ -76,13 +77,13 @@ training:
   use_8bit_adam: true
 
   # Logging
-  log_every_n_steps: 10
-  eval_every_n_steps: 250
-  save_every_n_steps: 250  # Save checkpoint every 250 steps
+  log_every_n_steps: 5  # More frequent for quick testing
+  eval_every_n_steps: 25  # Eval twice during test
+  save_every_n_steps: 25  # Save twice during test
 
   # Checkpointing
-  save_total_limit: 5  # Keep last 5 checkpoints (1250 steps worth at 250/checkpoint)
-  checkpoint_dir: "./checkpoints"
+  save_total_limit: 2  # Keep only last 2 checkpoints
+  checkpoint_dir: "./checkpoints_debug"
 
   # Distributed training
   ddp_backend: "nccl"
@@ -90,18 +91,18 @@ training:
 
 # Evaluation Configuration
 eval:
-  num_eval_episodes: 100
+  num_eval_episodes: 10  # Much smaller for quick testing
   eval_batch_size: 1
 
 # Weights & Biases
 wandb:
-  enabled: false  # Set true when ready to log
-  project: "vjepa2-ac-finetune"
-  entity: null  # Set your W&B username/team
-  run_name: null  # Auto-generated if null
+  enabled: false  # Disabled for debug runs
+  project: "vjepa2-ac-finetune-debug"
+  entity: null
+  run_name: null
 
 # GCP Configuration
 gcp:
-  project_name: null  # Set your GCP project name
-  checkpoint_bucket: null  # GCS bucket for checkpoint backup
+  project_name: null
+  checkpoint_bucket: null
   use_gce_credentials: true
