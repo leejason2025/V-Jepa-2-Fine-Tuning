@@ -14,8 +14,8 @@ import copy
 import time
 import os
 
-import src.models.ac_predictor as vit_ac_pred
-import src.models.vision_transformer as video_vit
+import vjepa2_src.models.ac_predictor as vit_ac_pred
+import vjepa2_vjepa2_ssrc.models.vision_transformer as video_vit
 
 from droid_local_dataset import create_dataloader
 
@@ -26,9 +26,9 @@ def main():
 
     # Configuration
     batch_size = 2
-    max_steps = 50  # Test run
-    save_every = 50
-    lr = 1e-6  # Conservative: very low LR
+    max_steps = 1250 
+    save_every = 250
+    lr = 1e-6  
 
     # V-JEPA2-AC specific params
     tokens_per_frame = 256  # 16x16 grid
@@ -81,17 +81,17 @@ def main():
     for param in target_encoder.parameters():
         param.requires_grad = False
 
-    # Add LoRA to predictor 
+    # Add LoRA to predictor
     lora_config = LoraConfig(
-        r=4,                      
-        lora_alpha=1,             
-        lora_dropout=0.0,         
+        r=16,
+        lora_alpha=32,
+        lora_dropout=0.05,
+        use_rslora=True,  # Rank-stabilized LoRA
         target_modules=[
-            # ONLY attention (NOT fc1/fc2 or action/state encoders)
             'attn.qkv',
             'attn.proj',
             'mlp.fc1',
-            'mlp.fc2' 
+            'mlp.fc2'
         ],
         bias="none", task_type=None
     )

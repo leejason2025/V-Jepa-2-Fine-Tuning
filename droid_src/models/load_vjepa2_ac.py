@@ -83,7 +83,7 @@ def load_vjepa2_ac(
         patch_size=16,
         num_frames=16,
         tubelet_size=2,
-        embed_dim=1408,  # ViT-Giant
+        embed_dim=1536,  # ViT-Giant encoder embedding dimension
         predictor_embed_dim=1024,
         depth=24,
         num_heads=16,
@@ -209,6 +209,6 @@ if __name__ == '__main__':
     with torch.no_grad():
         predictions = predictor(features, dummy_actions, dummy_states)
     print(f"Predictor output shape: {list(predictions.shape)}")
-    print(f"Expected: [B={B}, num_patches=2048, embed_dim=1408]")
+    print(f"Expected: [B={B}, num_patches=2048, embed_dim=1536]")
 
     print("\n✓ All tests passed!")

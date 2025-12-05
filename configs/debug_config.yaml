@@ -16,15 +16,13 @@ model:
 # LoRA Configuration
 lora:
   enabled: true
-  r: 16  # Rank (16-32 recommended for 300M model)
+  r: 16  # Rank (16-32 recommended for 305M model)
   lora_alpha: 32  # Scaling factor
   lora_dropout: 0.05
   use_rslora: true  # Rank-stabilized LoRA (alpha/sqrt(r))
   target_modules:
-    - "q_proj"
-    - "k_proj"
-    - "v_proj"
-    - "o_proj"
+    - "attn.qkv"
+    - "attn.proj"
     - "mlp.fc1"
     - "mlp.fc2"
   bias: "none"
