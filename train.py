@@ -113,7 +113,8 @@ def main():
     # DROID dataset only has train split, use it for validation too (we'll split it later)
     val_dataloader = create_dataloader(config, split='train', shuffle=False)
 
-    print(f"Training batches per epoch: ~{len(train_dataloader)}")
+    # Note: IterableDataset doesn't have a length
+    print(f"✓ Data loaders created (streaming from GCS)")
 
     # Create loss function
     loss_fn = create_loss_function(config)

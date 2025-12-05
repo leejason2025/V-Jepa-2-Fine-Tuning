@@ -32,7 +32,7 @@ lora:
 data:
   dataset: "droid"
   bucket_name: "gresearch"
-  bucket_prefix: "robotics/droid"
+  bucket_prefix: "robotics"
   debug_mode: false  # Set true to use droid_100 (100 episodes)
 
   # Video parameters
@@ -46,6 +46,8 @@ data:
 
   # Processing
   filter_idle_actions: true
+  idle_threshold: 0.01  # Threshold for filtering idle actions
+  clip_stride: 8  # Stride for sliding window (50% overlap with 16-frame clips)
   shuffle_buffer_size: 100000
   num_workers: 4
   prefetch_factor: 2
@@ -59,8 +61,8 @@ training:
   # Optimization
   learning_rate: 1.0e-4
   weight_decay: 0.01
-  warmup_steps: 500
-  max_steps: 100000
+  warmup_steps: 250
+  max_steps: 1100
 
   # Loss configuration
   teacher_forcing_steps: 15  # T=15 for teacher-forcing
@@ -75,11 +77,11 @@ training:
 
   # Logging
   log_every_n_steps: 10
-  eval_every_n_steps: 500
-  save_every_n_steps: 1000
+  eval_every_n_steps: 250
+  save_every_n_steps: 250  # Save checkpoint every 250 steps
 
   # Checkpointing
-  save_total_limit: 5  # Keep last 5 checkpoints
+  save_total_limit: 5  # Keep last 5 checkpoints (1250 steps worth at 250/checkpoint)
   checkpoint_dir: "./checkpoints"
 
   # Distributed training

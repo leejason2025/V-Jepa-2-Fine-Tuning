@@ -133,13 +133,13 @@ def load_vjepa2_ac(
             ])
 
         # Create LoRA config
+        # Note: use_rslora not supported in peft 0.7.0
         peft_config = LoraConfig(
             r=lora_config.get('r', 16),
             lora_alpha=lora_config.get('lora_alpha', 32),
             target_modules=lora_config.get('target_modules', default_targets),
             lora_dropout=lora_config.get('lora_dropout', 0.05),
             bias=lora_config.get('bias', 'none'),
-            use_rslora=lora_config.get('use_rslora', True),
         )
 
         predictor = get_peft_model(predictor, peft_config)

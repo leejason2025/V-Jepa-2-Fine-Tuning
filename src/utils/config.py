@@ -35,7 +35,7 @@ class DataConfig:
     """Data loading configuration."""
     dataset: str = "droid"
     bucket_name: str = "gresearch"
-    bucket_prefix: str = "robotics/droid"
+    bucket_prefix: str = "robotics"
     debug_mode: bool = False
     video_resolution: int = 256
     fps: int = 4
@@ -43,6 +43,8 @@ class DataConfig:
     frames_per_clip: int = 16
     camera_view: str = "wrist"
     filter_idle_actions: bool = True
+    idle_threshold: float = 0.01  # Threshold for filtering idle actions
+    clip_stride: int = 8  # Stride for sliding window clips
     shuffle_buffer_size: int = 100000
     num_workers: int = 4
     prefetch_factor: int = 2
@@ -55,8 +57,8 @@ class TrainingConfig:
     gradient_accumulation_steps: int = 16
     learning_rate: float = 1e-4
     weight_decay: float = 0.01
-    warmup_steps: int = 500
-    max_steps: int = 100000
+    warmup_steps: int = 250
+    max_steps: int = 2000
     teacher_forcing_steps: int = 15
     rollout_steps: int = 2
     loss_weight_tf: float = 1.0
@@ -65,8 +67,8 @@ class TrainingConfig:
     mixed_precision: str = "bf16"
     use_8bit_adam: bool = True
     log_every_n_steps: int = 10
-    eval_every_n_steps: int = 500
-    save_every_n_steps: int = 1000
+    eval_every_n_steps: int = 250
+    save_every_n_steps: int = 250
     save_total_limit: int = 5
     checkpoint_dir: str = "./checkpoints"
     ddp_backend: str = "nccl"
