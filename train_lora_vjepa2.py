@@ -239,10 +239,10 @@ def main():
     lora_cfg = config.get('lora', {})
 
     debug_mode = data_cfg.get('debug_mode', False)
-    batch_size = data_cfg.get('batch_size', 8)
+    batch_size = train_cfg.get('per_device_batch_size', 8)  # Get from training config
     frames_per_clip = data_cfg.get('frames_per_clip', 8)
     fps = data_cfg.get('fps', 4)
-    crop_size = data_cfg.get('crop_size', 256)
+    crop_size = data_cfg.get('video_resolution', 256)  # Match config param name
     shuffle_buffer_size = data_cfg.get('shuffle_buffer_size', 100)
     num_workers = data_cfg.get('num_workers', 4)
 
@@ -297,11 +297,15 @@ def main():
     print("\n" + "=" * 60)
     print("Starting training...")
     print("=" * 60)
+    sys.stdout.flush()  # Force flush
 
     # Training loop
     step = 0
     data_iter = iter(dataloader)
     start_time = time.time()
+
+    print("Fetching first batch...")
+    sys.stdout.flush()
 
     while step < max_steps:
         try:
@@ -327,6 +331,7 @@ def main():
         if step % 10 == 0:
             elapsed = time.time() - start_time
             print(f"Step {step}/{max_steps} | Loss: {loss:.4f} | Time: {elapsed:.1f}s")
+            sys.stdout.flush()
 
         # Save checkpoint
         if step % save_every_n_steps == 0:

@@ -16,9 +16,9 @@ model:
 lora:
   enabled: true
   r: 16  # Rank (16-32 recommended for 300M model)
-  lora_alpha: 32  # Scaling factor
+  lora_alpha: 16  # Scaling factor (halved from 32)
   lora_dropout: 0.05
-  use_rslora: true  # Rank-stabilized LoRA (alpha/sqrt(r))
+  use_rslora: false  # Rank-stabilized LoRA disabled (8x → 1x scaling)
   target_modules:
     - "q_proj"
     - "k_proj"
@@ -48,8 +48,8 @@ data:
   filter_idle_actions: true
   idle_threshold: 0.01  # Threshold for filtering idle actions
   clip_stride: 8  # Stride for sliding window (50% overlap with 16-frame clips)
-  shuffle_buffer_size: 100000
-  num_workers: 4
+  shuffle_buffer_size: 100  # Reduced from 100000 to prevent memory crash
+  num_workers: 0  # Set to 0 to avoid TensorFlow multiprocessing issues
   prefetch_factor: 2
 
 # Training Configuration
@@ -86,7 +86,7 @@ training:
 
   # Distributed training
   ddp_backend: "nccl"
-  gradient_clipping: 1.0
+  gradient_clipping: 0.5
 
 # Evaluation Configuration
 eval:

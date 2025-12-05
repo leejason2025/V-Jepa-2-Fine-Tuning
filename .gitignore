@@ -77,3 +77,6 @@ temp/
 *.tmp
 *.bak
 *~
+
+#Uploading Files
+upload_to_hf.py
