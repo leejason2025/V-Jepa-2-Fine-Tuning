@@ -39,7 +39,9 @@ ENV/
 
 # Training artifacts
 checkpoints/
+checkpoints_debug/
 logs/
+*.log
 wandb/
 runs/
 
@@ -69,7 +71,10 @@ tmp/
 temp/
 *.tmp
 
-/*.md
+# Documentation
+*.md
+!README.md
 
-# V-JEPA2 source code (copied from external repository)
+# V-JEPA2
 /vjepa2_src/
+/vjepa2/

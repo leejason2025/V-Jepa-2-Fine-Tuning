@@ -173,11 +173,15 @@ class VJEPA2Loss(nn.Module):
         Returns:
             Tuple of (total_loss, loss_dict) where loss_dict contains individual losses
         """
-        # Run predictor
-        predictions = predictor(encoder_features, actions, states)
+        # Flatten encoder features from [B, T, pH, pW, D] to [B, T*pH*pW, D]
+        B, T, pH, pW, D = encoder_features.shape
+        encoder_features_flat = encoder_features.view(B, T * pH * pW, D)
 
-        # Compute L1 loss between predictions and features
-        loss = F.l1_loss(predictions, encoder_features, reduction='mean')
+        # Run predictor
+        predictions = predictor(encoder_features_flat, actions, states)
+
+        # Compute L1 loss between predictions and features (both flattened)
+        loss = F.l1_loss(predictions, encoder_features_flat, reduction='mean')
 
         # Loss dictionary for logging
         loss_dict = {

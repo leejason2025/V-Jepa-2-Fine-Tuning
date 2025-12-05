@@ -39,8 +39,8 @@ data:
   # Video parameters
   video_resolution: 256
   fps: 4
-  clip_length_sec: 4
-  frames_per_clip: 16
+  clip_length_sec: 2  # 2 seconds (was 4)
+  frames_per_clip: 8  # 8 frames to match V-JEPA2-AC pretrained (was 16)
 
   # Camera view
   camera_view: "wrist"  # "wrist", "exterior_1", "exterior_2"
@@ -48,7 +48,7 @@ data:
   # Processing - MINIMAL for quick testing
   filter_idle_actions: false  # Disabled for faster testing
   idle_threshold: 0.01
-  clip_stride: 8  # Stride for sliding window (50% overlap with 16-frame clips)
+  clip_stride: 4  # Stride for sliding window (50% overlap with 8-frame clips)
   shuffle_buffer_size: 10  # Minimal buffer (was 100000)
   num_workers: 4
   prefetch_factor: 2

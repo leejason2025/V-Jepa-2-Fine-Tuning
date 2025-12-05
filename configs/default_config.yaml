@@ -38,8 +38,8 @@ data:
   # Video parameters
   video_resolution: 256
   fps: 4
-  clip_length_sec: 4
-  frames_per_clip: 16
+  clip_length_sec: 2  # 2 seconds (matches V-JEPA2-AC)
+  frames_per_clip: 8  # 8 frames to match V-JEPA2-AC pretrained dimensions
 
   # Camera view
   camera_view: "wrist"  # "wrist", "exterior_1", "exterior_2"

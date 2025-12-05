@@ -112,19 +112,30 @@ class Trainer:
             patch_W = W // patch_size
             return torch.randn(B, T, patch_H, patch_W, encoder_dim, device=frames.device)
 
-        B, T, C, H, W = frames.shape
+        # Dataset returns [B, C, T, H, W]
+        B, C, T, H, W = frames.shape
 
-        # Encode each frame independently
+        # V-JEPA2 encoder processes video with tubelet_size=2, so we encode the full video
+        # Then extract per-frame features from the output
         with torch.no_grad():
-            # Reshape to [B*T, C, H, W]
-            frames_flat = frames.view(B * T, C, H, W)
+            # Encode full video: [B, C, T, H, W] -> [B, num_patches, encoder_dim]
+            encoded = self.encoder(frames)  # [B, num_patches_total, D]
 
-            # Encode
-            features_flat = self.encoder(frames_flat)  # [B*T, patch_H, patch_W, encoder_dim]
+            # V-JEPA2 uses tubelet_size=2, so temporal dimension is T//2
+            # num_patches_total = (T//2) * (H//patch_size) * (W//patch_size)
+            B_cur, num_patches_total, D = encoded.shape
 
-            # Reshape back to [B, T, patch_H, patch_W, encoder_dim]
-            _, pH, pW, D = features_flat.shape
-            features = features_flat.view(B, T, pH, pW, D)
+            # Calculate spatial dimensions
+            tubelet_size = 2
+            T_encoded = T // tubelet_size  # 16 // 2 = 8 temporal tokens
+            pH = pW = int((num_patches_total // T_encoded) ** 0.5)
+
+            # Reshape to [B, T_encoded, pH, pW, D]
+            features_encoded = encoded.view(B_cur, T_encoded, pH, pW, D)
+
+            # Upsample temporal dimension to match original: [B, T_encoded, pH, pW, D] -> [B, T, pH, pW, D]
+            # Each tubelet token represents 2 frames, so we repeat each token twice
+            features = features_encoded.repeat_interleave(tubelet_size, dim=1)  # [B, T, pH, pW, D]
 
         return features
 
@@ -143,7 +154,8 @@ class Trainer:
         states = batch['states'].to(self.device)  # [B, T, state_dim]
 
         # Encode frames
-        with autocast(device_type='cuda', dtype=self.dtype, enabled=self.use_amp):
+        # Note: older PyTorch versions don't support device_type parameter
+        with autocast(dtype=self.dtype, enabled=self.use_amp):
             encoder_features = self.encode_frames(frames)  # [B, T, pH, pW, D]
 
             # Compute loss
